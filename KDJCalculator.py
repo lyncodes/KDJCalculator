@@ -1,5 +1,13 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+
+plt.style.use("ggplot")
 df = pd.read_csv(r'bitmex_xbt_4h.csv')
+df = df[200:-100]
+df.index = pd.to_datetime(df['datetime'])
+df = df.resample('D').mean()
+
+
 class KDJ_calculator:
     """
     calculator KDJ indicator according the close  price
@@ -16,9 +24,9 @@ class KDJ_calculator:
 
     def rsv(self):
         # past n periods of HIGH price
-        n_high = self.data.close.rolling(self.n_period).max()
+        n_high = self.data.high.rolling(self.n_period).max()
         # past n periods of LOW price
-        n_low = self.data.close.rolling(self.n_period).min()
+        n_low = self.data.low.rolling(self.n_period).min()
         # the RSV values
         rsv = ((self.data.close - n_low) / (n_high - n_low)) * 100
         rsv.dropna(inplace=True)
@@ -65,7 +73,7 @@ class KDJ_calculator:
         return self.kdj_indicators
 
 
-kdj = KDJ_calculator(df,27)
+kdj = KDJ_calculator(df, 9)
 
 kdj.rsv()
 
@@ -74,3 +82,7 @@ kdj.kdj_calculator()
 kdj.show_kdj_indicator()
 
 kdj.combine_kdj_to_raw_data()
+
+result = kdj.combine_kdj_to_raw_data()[['K', 'D', 'J']]
+
+result.plot(figsize=(40, 10))
